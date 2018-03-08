@@ -168,3 +168,124 @@ describe('Cascading cancellation', function () {
       });
   });
 });
+
+describe('Token racing', function () {
+  it('should claim it is not cancelled ' +
+      'when none of the parent tokens are cancelled', function () {
+    var source1 = tokenSource()
+    var source2 = tokenSource()
+    var racingToken = tokenSource.race([ source1.token, source2.token ])
+
+    assert(racingToken.isCancelled() === false)
+  })
+
+  it('should claim it is cancelled ' +
+      'when one of the parent tokens is cancelled', function (callback) {
+    var source1 = tokenSource()
+    var source2 = tokenSource()
+    source1.token.onCancelled(function () {
+      assert(racingToken.isCancelled() === true)
+      callback()
+    })
+
+    var racingToken = tokenSource.race([ source1.token, source2.token ])
+    source1.cancel()
+  })
+
+  it('should claim it is cancelled ' +
+      'when one of the parent tokens had already been cancelled', function () {
+    var source1 = tokenSource()
+    var source2 = tokenSource()
+    source1.cancel()
+
+    var racingToken = tokenSource.race([ source1.token, source2.token ])
+    assert(racingToken.isCancelled() === true)
+  })
+
+  it('should throw when one of the parent tokens is cancelled', function (callback) {
+    var source1 = tokenSource()
+    var source2 = tokenSource()
+    source1.token.onCancelled(function () {
+      try {
+        racingToken.throwIfCancelled()
+      } catch (reason) {
+        callback()
+        return
+      }
+      callback(new Error('Did not throw'))
+    })
+
+    var racingToken = tokenSource.race([ source1.token, source2.token ])
+    source1.cancel()
+  })
+
+  it('should throw when one of the parent tokens had already been cancelled', function () {
+    var source1 = tokenSource()
+    var source2 = tokenSource()
+    source1.cancel()
+
+    var racingToken = tokenSource.race([ source1.token, source2.token ])
+    try {
+      racingToken.throwIfCancelled()
+    } catch (reason) {
+      return
+    }
+    throw new Error('Did not throw')
+  })
+
+  it('should call onCancelled() listeners ' +
+      'when one of the parent tokens had already been cancelled', function (callback) {
+    var source1 = tokenSource()
+    var source2 = tokenSource()
+    var racingToken = tokenSource.race([ source1.token, source2.token ])
+
+    source1.cancel()
+    racingToken.onCancelled(function () {
+      callback()
+    })
+  })
+
+  it('should call onCancelled() listeners ' +
+      'when one of the parent tokens gets cancelled', function (callback) {
+    var source1 = tokenSource()
+    var source2 = tokenSource()
+    var racingToken = tokenSource.race([ source1.token, source2.token ])
+
+    racingToken.onCancelled(function () {
+      callback()
+    })
+    source1.cancel()
+  })
+
+  it('should pass the first cancellation reason to onCancelled()', function (callback) {
+    var source1 = tokenSource()
+    var source2 = tokenSource()
+    var racingToken = tokenSource.race([ source1.token, source2.token ])
+
+    racingToken.onCancelled(function (reason) {
+      assert(reason.message.indexOf('Expected reason') > -1)
+      callback()
+    })
+    source1.cancel(new Error('Expected reason'))
+  })
+
+  it('should not call onCancelled() listeners on further parent cancellations ' +
+      'after one parent token has been cancelled', function (callback) {
+    var source1 = tokenSource()
+    var source2 = tokenSource()
+    var racingToken = tokenSource.race([ source1.token, source2.token ])
+
+    var cancelCount = 0
+    racingToken.onCancelled(function () {
+      cancelCount += 1
+      if (cancelCount === 1) {
+        setTimeout(callback, 100)
+      } else {
+        callback(new Error('onCancelled() called multiple times.'))
+      }
+    })
+
+    source1.cancel()
+    source2.cancel()
+  })
+})
