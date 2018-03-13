@@ -61,3 +61,39 @@ function token(data) {
   }
   return exports;
 }
+
+tokenSource.race = function (cancelTokens) {
+  const racing = tokenSource()
+  const onParentCancel = function (reason) {
+    racing.cancel(reason)
+    unregisters.forEach((unregister) => {
+      if (unregister) {
+        unregister()
+      }
+    })
+  }
+
+  const unregisters = cancelTokens.map(function (cancelToken) {
+    return cancelToken ? cancelToken.onCancelled(onParentCancel) : null
+  })
+
+  return {
+    onCancelled: racing.token.onCancelled,
+    isCancelled: function () {
+      return (
+        racing.token.isCancelled() ||
+        cancelTokens.some((cancelToken) => {
+          return Boolean(cancelToken && cancelToken.isCancelled())
+        })
+      )
+    },
+    throwIfCancelled: function () {
+      racing.token.throwIfCancelled()
+      cancelTokens.forEach((cancelToken) => {
+        if (cancelToken) {
+          cancelToken.throwIfCancelled()
+        }
+      })
+    },
+  }
+}
