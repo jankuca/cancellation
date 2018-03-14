@@ -66,7 +66,7 @@ tokenSource.race = function (cancelTokens) {
   const racing = tokenSource()
   const onParentCancel = function (reason) {
     racing.cancel(reason)
-    unregisters.forEach((unregister) => {
+    unregisters.forEach(function (unregister) {
       if (unregister) {
         unregister()
       }
@@ -82,14 +82,14 @@ tokenSource.race = function (cancelTokens) {
     isCancelled: function () {
       return (
         racing.token.isCancelled() ||
-        cancelTokens.some((cancelToken) => {
+        cancelTokens.some(function (cancelToken) {
           return Boolean(cancelToken && cancelToken.isCancelled())
         })
       )
     },
     throwIfCancelled: function () {
       racing.token.throwIfCancelled()
-      cancelTokens.forEach((cancelToken) => {
+      cancelTokens.forEach(function (cancelToken) {
         if (cancelToken) {
           cancelToken.throwIfCancelled()
         }
