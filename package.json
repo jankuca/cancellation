@@ -1,6 +1,6 @@
 {
   "name": "@avocode/cancel-token",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A method for making async operations cancellable",
   "main": "index.js",
   "scripts": {
