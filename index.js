@@ -10,8 +10,10 @@ function tokenSource() {
   function cancel(reason) {
     data.isCancelled = true;
     reason = reason || 'Operation Cancelled';
-    if (typeof reason == 'string') reason = new Error(reason);
-    reason.code = 'OperationCancelled';
+    if (typeof reason == 'string') {
+      reason = new Error(reason);
+      reason.code = 'OperationCancelled';
+    }
     data.reason = reason;
     setTimeout(function () {
       for (var i = 0; i < data.listeners.length; i++) {
