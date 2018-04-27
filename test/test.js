@@ -75,6 +75,19 @@ describe('Cancelling with a token', function () {
       });
   });
 
+  it('rejects without adding code=OperationCancelled ' +
+      'to a custom cancellation reason error', function () {
+    var source = tokenSource();
+    source.cancel(new Error('Custom Cancel'));
+
+    return delay(20000, source.token)
+      .then(function () {
+        throw new Error('Should\'ve been cancelled');
+      }, function (reason) {
+        assert(reason.code !== 'OperationCancelled');
+      });
+  });
+
   it('does not call an unregistered cancellation listener', function (callback) {
     var source = tokenSource();
     var timeout = setTimeout(callback, 100)
@@ -264,6 +277,19 @@ describe('Token racing', function () {
 
     racingToken.onCancelled(function (reason) {
       assert(reason.message.indexOf('Expected reason') > -1)
+      callback()
+    })
+    source1.cancel(new Error('Expected reason'))
+  })
+
+  it('should not add code=OperationCancelled to a custom cancellation ' +
+      'reason error passed to onCancelled()', function (callback) {
+    var source1 = tokenSource()
+    var source2 = tokenSource()
+    var racingToken = tokenSource.race([ source1.token, source2.token ])
+
+    racingToken.onCancelled(function (reason) {
+      assert(reason.code !== 'OperationCancelled')
       callback()
     })
     source1.cancel(new Error('Expected reason'))
