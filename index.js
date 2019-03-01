@@ -56,7 +56,7 @@ function token(data) {
       return function () {
         var index = data.listeners.indexOf(cb)
         if (index > -1) {
-          data.listeners.splice(index, 1)
+          data.listeners[index] = null
         }
       }
     }
