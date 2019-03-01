@@ -99,6 +99,17 @@ describe('Cancelling with a token', function () {
     source.cancel()
   })
 
+  it('call a listener registered after an unregistered cancellation listener', function (callback) {
+    var source = tokenSource();
+    var unregister = source.token.onCancelled(function () {
+      unregister()
+    })
+    source.token.onCancelled(function () {
+      callback()
+    })
+    source.cancel()
+  })
+
   it('does not call a cancellation listener unregistered between ' +
       'cancellation and async listener calls', function (callback) {
     var source = tokenSource();
