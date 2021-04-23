@@ -1,3 +1,5 @@
+const AbortController = require('abort-controller')
+
 module.exports = tokenSource;
 module.exports.empty = tokenSource().token;
 

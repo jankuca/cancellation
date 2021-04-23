@@ -3,6 +3,7 @@
   "version": "1.3.1",
   "description": "A method for making async operations cancellable",
   "main": "index.js",
+  "typings": "index.d.ts",
   "scripts": {
     "test": "mocha -R spec"
   },
@@ -21,8 +22,11 @@
   "author": "ForbesLindesay",
   "license": "MIT",
   "devDependencies": {
-    "mocha": "^5.0.1",
     "better-assert": "^1.0.0",
+    "mocha": "^5.0.1",
     "promise": "^7.1.1"
+  },
+  "dependencies": {
+    "abort-controller": "3.0.0"
   }
 }
