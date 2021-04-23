@@ -114,3 +114,14 @@ tokenSource.race = function (cancelTokens) {
     },
   }
 }
+
+tokenSource.fromSignal = function (signal) {
+  const { token, cancel } = tokenSource()
+  const handleAbort = function () {
+    cancel()
+  }
+
+  signal.addEventListener('abort', handleAbort, { once: true })
+
+  return token
+}
