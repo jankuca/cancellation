@@ -7,14 +7,19 @@ function tokenSource() {
     isCancelled: false,
     listeners: []
   };
+
+  var abortController = new AbortController()
+
   function cancel(reason) {
     data.isCancelled = true;
+
     reason = reason || 'Operation Cancelled';
     if (typeof reason == 'string') {
       reason = new Error(reason);
       reason.code = 'OperationCancelled';
     }
     data.reason = reason;
+
     setTimeout(function () {
       for (var i = 0; i < data.listeners.length; i++) {
         if (typeof data.listeners[i] === 'function') {
@@ -22,25 +27,31 @@ function tokenSource() {
         }
       }
     }, 0);
+
+    abortController.abort()
   }
+
   return {
     cancel: cancel,
-    token: token(data)
+    token: token(data, abortController.signal)
   };
 }
 
-function token(data) {
+function token(data, signal) {
   var exports = {};
+
   exports.isCancelled = isCancelled;
   function isCancelled() {
     return data.isCancelled;
   }
+
   exports.throwIfCancelled = throwIfCancelled;
   function throwIfCancelled() {
     if (isCancelled()) {
       throw data.reason;
     }
   }
+
   exports.onCancelled = onCancelled;
   function onCancelled(cb) {
     if (isCancelled()) {
@@ -61,6 +72,9 @@ function token(data) {
       }
     }
   }
+
+  exports.signal = signal
+
   return exports;
 }
 
@@ -80,6 +94,7 @@ tokenSource.race = function (cancelTokens) {
   })
 
   return {
+    signal: racing.token.signal,
     onCancelled: racing.token.onCancelled,
     isCancelled: function () {
       return (
