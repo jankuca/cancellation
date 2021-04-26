@@ -3,14 +3,17 @@ declare module '@avocode/cancel-token' {
 
   export interface CancelToken {
     isCancelled(): boolean
+    isDisposed(): boolean
     throwIfCancelled(): void
     onCancelled(listener: (reason: Error) => void): () => void
+    onDisposed(listener: () => void): () => void
     signal: AbortSignal
   }
 
   interface TokenSource {
     (): {
       cancel: (reason?: Error | string) => void
+      dispose: () => void
       token: CancelToken
     }
 
