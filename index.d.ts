@@ -1,6 +1,4 @@
 declare module '@avocode/cancel-token' {
-  import { AbortSignal } from 'abort-controller'
-
   export interface CancelToken {
     isCancelled(): boolean
     isDisposed(): boolean
