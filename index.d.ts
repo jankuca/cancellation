@@ -9,6 +9,12 @@ declare module '@avocode/cancel-token' {
   }
 
   interface TokenSource {
+    new (): {
+      cancel: (reason?: Error | string) => void
+      dispose: () => void
+      token: CancelToken
+    }
+
     (): {
       cancel: (reason?: Error | string) => void
       dispose: () => void
